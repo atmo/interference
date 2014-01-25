@@ -2,14 +2,16 @@
 <head>
 	<script type="application/javascript">
 		var canvas, context;
-		var height = 600; 
-		var width =  600 
-		var wavelength = 5;
+		var height = 500; 
+		var width =  500; 
+		var wavelength = 15;
 		var period = 1600;
 		var sources = [[height/2, width/4], [height/2, 3*width/4], [height/4, width/2], [3*height/4, width/2]];
-		var startTime = 0, prevTime, curTime;
-		var interval = 200;
+		var startTime = 0, curTime = startTime;
+		var interval = 100;
 		var D;
+
+		var running = true;
 
 		var image, prevImage;
 
@@ -25,23 +27,22 @@
 			D = getDistances(sources);
 
 			image = context.getImageData(0, 0, width, height);
-			update();
+			run();
 		}
 
-		function update() {
+		function run() {
 		    var pixels = image.data;
 
-	    	curTime = new Date();
-	    	var index = 0;
-	    	var shift = (curTime-startTime)%period/period*2*Math.PI;
+    		var shift = (curTime-startTime)%period/period*2*Math.PI;
+			var index = 0;
 		    for (var y = height - 1; y >= 0; y--) {		
 				for (var x = width - 1; x >= 0; x--) {
 					var val = 0.0;
 	    			for (var i = sources.length - 1; i >= 0; i--) {
-				    	val += Math.sin(D[i][y][x]/wavelength+shift)+1;
+				    	val += Math.sin(2*Math.PI*D[i][y][x]/wavelength+shift)+1;
 			    	}
-			    	val /= 2*sources.length;
-			    	val *= 255;
+
+			    	val *= 255.0/(2*sources.length);
 			    	pixels[index] = val;
 			        pixels[index + 1] = val;
 			        pixels[index + 2] = val;
@@ -49,15 +50,10 @@
 			        index += 4;
 				}
 			}
-		    prevTime = curTime;
-	    	curTime = new Date();
 		    context.putImageData(image, 0, 0);
-
-		    console.log((curTime-prevTime)/1000);
-
-		    setTimeout(update, interval)
-
-		}
+	    	curTime += interval;
+			setTimeout(run, interval);
+	    }
 
 		function getDistances(sources) {
 			var D = new Array(sources.length);
