@@ -1,0 +1,84 @@
+<html>
+<head>
+	<script type="application/javascript">
+		var canvas, context;
+		var height = 600; 
+		var width =  600 
+		var wavelength = 5;
+		var period = 1600;
+		var sources = [[height/2, width/4], [height/2, 3*width/4], [height/4, width/2], [3*height/4, width/2]];
+		var startTime = 0, prevTime, curTime;
+		var interval = 200;
+		var D;
+
+		var image, prevImage;
+
+		function init() {
+			canvas = document.getElementById('canvas');
+			context = canvas.getContext('2d');
+			canvas.width = width;
+			canvas.height = height;
+
+			context.fillStyle="white";
+			context.fillRect(0,0,width,height);
+
+			D = getDistances(sources);
+
+			image = context.getImageData(0, 0, width, height);
+			update();
+		}
+
+		function update() {
+		    var pixels = image.data;
+
+	    	curTime = new Date();
+	    	var index = 0;
+	    	var shift = (curTime-startTime)%period/period*2*Math.PI;
+		    for (var y = height - 1; y >= 0; y--) {		
+				for (var x = width - 1; x >= 0; x--) {
+					var val = 0.0;
+	    			for (var i = sources.length - 1; i >= 0; i--) {
+				    	val += Math.sin(D[i][y][x]/wavelength+shift)+1;
+			    	}
+			    	val /= 2*sources.length;
+			    	val *= 255;
+			    	pixels[index] = val;
+			        pixels[index + 1] = val;
+			        pixels[index + 2] = val;
+			        pixels[index + 3] = pixels[index + 3];
+			        index += 4;
+				}
+			}
+		    prevTime = curTime;
+	    	curTime = new Date();
+		    context.putImageData(image, 0, 0);
+
+		    console.log((curTime-prevTime)/1000);
+
+		    setTimeout(update, interval)
+
+		}
+
+		function getDistances(sources) {
+			var D = new Array(sources.length);
+			for (var i = sources.length - 1; i >= 0; i--) {
+				D[i] = new Array(height);
+				for (var y = height - 1; y >= 0; y--) {					
+					D[i][y] = new Array(width);
+					for (var x = width - 1; x >= 0; x--) {
+						D[i][y][x] = distance([y, x], sources[i]);
+					}
+				}
+			}
+			return D;
+		}
+
+		function distance(a, b) {
+			function sqr(a) { return a*a; }
+			return Math.sqrt(sqr(a[0]-b[0]) + sqr(a[1]-b[1]));
+		}
+	</script></head>
+	<body onload="init();">
+		<canvas id="canvas"></canvas>
+	</body>
+</html>
