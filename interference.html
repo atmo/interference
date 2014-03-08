@@ -2,14 +2,21 @@
 <head>
 	<script type="application/javascript">
 		var canvas, context;
-		var height = 500; 
-		var width =  500; 
-		var wavelength = 15;
-		var period = 1600;
-		var sources = [[height/2, width/4], [height/2, 3*width/4], [height/4, width/2], [3*height/4, width/2]];
+		var size = 500;
+		var height = size; 
+		var width =  size;
+		var pixelSize = 2;
+		var pixelHeight = height/pixelSize;
+		var pixelWidth = width/pixelSize;
+		var wavelength = 50;
+		var period = 20;
+		var sources;
 		var startTime = 0, curTime = startTime;
-		var interval = 100;
-		var D;
+		var momentsCount = 30;
+		var dt = period/momentsCount;
+		var diff = 50;
+		var radius = 4;
+		var D, N = 9;
 
 		var running = true;
 
@@ -24,10 +31,44 @@
 			context.fillStyle="white";
 			context.fillRect(0,0,width,height);
 
+			sources = new Array(N);
+			createSources(N);
+
 			D = getDistances(sources);
 
 			image = context.getImageData(0, 0, width, height);
 			run();
+		}
+
+		function createSources (n) {
+			var centery = height/2, centerx = width/2;
+			var R = size/4;
+			for (var i = n-1; i>=0; --i) {
+				var alpha = 2*Math.PI*i/n;
+				sources[i] = new Array(2);
+				sources[i][0] = centerx + Math.floor(R*Math.sin(alpha));
+				sources[i][1] = centery - Math.floor(R*Math.cos(alpha));
+			}
+		}
+
+		function drawSources (sources, radius) {
+			var pixels = image.data;
+			for (var i = sources.length - 1; i >= 0; i--) {
+				index = 4*width*sources[i][1]+4*sources[i][0]-4*radius;
+				for (var j = 4*(2*radius-1); j>=0; j -= 4) {
+					pixels[index+j] = 255.0;
+			        pixels[index+j + 1] = 0;
+			        pixels[index+j + 2] = 0;
+			        pixels[index+j + 3] = pixels[index+j + 3];
+				}
+				index = 4*width*(sources[i][1]-radius)+4*sources[i][0];
+				for (var j = 4*width*(2*radius-1); j>=0; j -= 4*width) {
+					pixels[index+j] = 255.0;
+			        pixels[index+j + 1] = 0;
+			        pixels[index+j + 2] = 0;
+			        pixels[index+j + 3] = pixels[index+j + 3];
+				}
+	    	}
 		}
 
 		function run() {
@@ -39,42 +80,66 @@
 				for (var x = width - 1; x >= 0; x--) {
 					var val = 0.0;
 	    			for (var i = sources.length - 1; i >= 0; i--) {
-				    	val += Math.sin(2*Math.PI*D[i][y][x]/wavelength+shift)+1;
+				    	val += Math.sin(D[y][x][i]-shift)+1;
 			    	}
 
-			    	val *= 255.0/(2*sources.length);
+			    	val *= Math.floor((255.0-diff)/(2*sources.length));
+
 			    	pixels[index] = val;
 			        pixels[index + 1] = val;
 			        pixels[index + 2] = val;
 			        pixels[index + 3] = pixels[index + 3];
 			        index += 4;
 				}
-			}
+			}		    
+			drawSources(sources, radius);
 		    context.putImageData(image, 0, 0);
-	    	curTime += interval;
-			setTimeout(run, interval);
+	    	curTime += dt;
+			requestAnimationFrame(run);
 	    }
 
+	    function changeSources () {
+	    	selection = document.getElementById('select')[0].value;
+	    	if (selection == 1)
+	    		sources = [[height/2, width/4]];
+	    	else if (selection == 2)
+	    		sources = [[height/2, width/4],  [height/2, 3*width/4]];
+	    }
+
+
 		function getDistances(sources) {
-			var D = new Array(sources.length);
-			for (var i = sources.length - 1; i >= 0; i--) {
-				D[i] = new Array(height);
-				for (var y = height - 1; y >= 0; y--) {					
-					D[i][y] = new Array(width);
-					for (var x = width - 1; x >= 0; x--) {
-						D[i][y][x] = distance([y, x], sources[i]);
+			var D = new Array(height);
+			for (var y = height - 1; y >= 0; y--) {					
+				D[y] = new Array(width);
+				for (var x = width - 1; x >= 0; x--) {
+					D[y][x] = new Array(sources.length);
+					for (var i = sources.length - 1; i >= 0; i--) {
+						D[y][x][i] = distance([x, height-y], sources[i])*2*Math.PI/period; // TODO: WTF??
 					}
-				}
+				}				
 			}
 			return D;
 		}
 
 		function distance(a, b) {
-			function sqr(a) { return a*a; }
-			return Math.sqrt(sqr(a[0]-b[0]) + sqr(a[1]-b[1]));
+			return Math.sqrt((a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]));
 		}
-	</script></head>
+	</script>
+	</head>
+	<!-- <body> -->
 	<body onload="init();">
-		<canvas id="canvas"></canvas>
+		<div style="width: 100%">
+			<div style="float:left; width: 60%">
+				<canvas id="canvas"></canvas>
+			</div>
+			<div style="float:left">
+				<select id="select" onchange="changeSources()">
+				  <option value=1> 1 </option> 
+				  <option value=2> 2 </option>
+				  <option value=3> 3 </option>
+				  <option value=4> 4 </option>
+				</select>
+			</div>
+		</div>
 	</body>
 </html>
