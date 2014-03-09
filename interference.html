@@ -11,7 +11,7 @@
 		var momentsCount = 10000;
 		var sources;
 		var startTime = 0, curTime = startTime;
-		var diff = 20;
+		var diff = 0;
 		var radius = 4;
 		var step = 1;
 		var S;
@@ -31,6 +31,7 @@
 			sources = createSources(sourcesCount);
 
 			S = calculateSinuses(period, momentsCount);
+			D = calculateDistances(sources);
 
 			image = context.getImageData(0, 0, width, height);
 			run();
@@ -79,7 +80,7 @@
 				for (var x = width - 1; x >= 0; x--) {
 					var val = 0.0;
 	    			for (var i = sources.length - 1; i >= 0; i--) {
-	    				d = distance(sources[i][0], sources[i][1], x, height-y);
+	    				d = D[y][x][i];
 	    				moment = Math.round(d - Math.floor(d/period)*period)/period*momentsCount;
 				    	val += S[(moment - shift + momentsCount)%momentsCount];
 			    	}
@@ -115,9 +116,22 @@
 			}
 			return S;
 		}
+		function calculateDistances(sources) {
+			var D = new Array(height);
+			for (var y = height - 1; y >= 0; y--) {					
+				D[y] = new Array(width);
+				for (var x = width - 1; x >= 0; x--) {
+					D[y][x] = new Array(sources.length);
+					for (var i = sources.length - 1; i >= 0; i--) {
+						D[y][x][i] = distance([x, height-y], sources[i]);
+					}
+				}				
+			}
+			return D;
+		}
 
-		function distance(a0, a1, b0, b1) {
-			return Math.sqrt((a0-b0)*(a0-b0) + (a1-b1)*(a1-b1));
+		function distance(a, b) {
+			return Math.sqrt((a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]));
 		}
 	</script>
 	</head>
