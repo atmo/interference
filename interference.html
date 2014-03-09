@@ -2,25 +2,22 @@
 <head>
 	<script type="application/javascript">
 		var canvas, context;
-		var size = 500;
-		var height = size; 
-		var width =  size;
+		var size = 600;
+		var height = size, width = size;
+		var center = [Math.floor(width/2), Math.floor(height/2)];
 		var pixelSize = 2;
-		var pixelHeight = height/pixelSize;
-		var pixelWidth = width/pixelSize;
 		var wavelength = 50;
 		var period = 20;
+		var momentsCount = 10000;
 		var sources;
 		var startTime = 0, curTime = startTime;
-		var momentsCount = 30;
-		var dt = period/momentsCount;
-		var diff = 50;
+		var diff = 20;
 		var radius = 4;
-		var D, N = 9;
+		var step = 1;
+		var S;
+		var sourcesCount = 13;
 
 		var running = true;
-
-		var image, prevImage;
 
 		function init() {
 			canvas = document.getElementById('canvas');
@@ -31,42 +28,44 @@
 			context.fillStyle="white";
 			context.fillRect(0,0,width,height);
 
-			sources = new Array(N);
-			createSources(N);
+			sources = createSources(sourcesCount);
 
-			D = getDistances(sources);
+			S = calculateSinuses(period, momentsCount);
 
 			image = context.getImageData(0, 0, width, height);
 			run();
 		}
 
-		function createSources (n) {
-			var centery = height/2, centerx = width/2;
-			var R = size/4;
-			for (var i = n-1; i>=0; --i) {
-				var alpha = 2*Math.PI*i/n;
-				sources[i] = new Array(2);
-				sources[i][0] = centerx + Math.floor(R*Math.sin(alpha));
-				sources[i][1] = centery - Math.floor(R*Math.cos(alpha));
+		function createSources (sourcesCount) {
+			var s = new Array(sourcesCount);
+			var R = size/4, alpha;
+
+			for (var i = sourcesCount-1; i>=0; --i) {
+				alpha = 2*Math.PI*i/sourcesCount;
+				s[i] = new Array(2);
+				s[i][0] = center[0] + Math.round(R*Math.sin(alpha));
+				s[i][1] = center[1] - Math.round(R*Math.cos(alpha));
 			}
+			return s;
 		}
 
 		function drawSources (sources, radius) {
 			var pixels = image.data;
 			for (var i = sources.length - 1; i >= 0; i--) {
-				index = 4*width*sources[i][1]+4*sources[i][0]-4*radius;
+				index = 4*(width*sources[i][1] + sources[i][0] - radius);
 				for (var j = 4*(2*radius-1); j>=0; j -= 4) {
-					pixels[index+j] = 255.0;
-			        pixels[index+j + 1] = 0;
-			        pixels[index+j + 2] = 0;
-			        pixels[index+j + 3] = pixels[index+j + 3];
+					pixels[index + j] = 255.0;
+			        pixels[index + j + 1] = 0;
+			        pixels[index + j + 2] = 0;
+			        pixels[index + j + 3] = pixels[index + j + 3];
 				}
-				index = 4*width*(sources[i][1]-radius)+4*sources[i][0];
+
+				index = 4*(width*(sources[i][1] - radius) + sources[i][0]);
 				for (var j = 4*width*(2*radius-1); j>=0; j -= 4*width) {
-					pixels[index+j] = 255.0;
-			        pixels[index+j + 1] = 0;
-			        pixels[index+j + 2] = 0;
-			        pixels[index+j + 3] = pixels[index+j + 3];
+					pixels[index + j] = 255.0;
+			        pixels[index + j + 1] = 0;
+			        pixels[index + j + 2] = 0;
+			        pixels[index + j + 3] = pixels[index + j + 3];
 				}
 	    	}
 		}
@@ -74,16 +73,18 @@
 		function run() {
 		    var pixels = image.data;
 
-    		var shift = (curTime-startTime)%period/period*2*Math.PI;
-			var index = 0;
+    		var shift = (curTime-startTime)%period/period*momentsCount;
+			var index = 0, d, moment;
 		    for (var y = height - 1; y >= 0; y--) {		
 				for (var x = width - 1; x >= 0; x--) {
 					var val = 0.0;
 	    			for (var i = sources.length - 1; i >= 0; i--) {
-				    	val += Math.sin(D[y][x][i]-shift)+1;
+	    				d = distance(sources[i][0], sources[i][1], x, height-y);
+	    				moment = Math.round(d - Math.floor(d/period)*period)/period*momentsCount;
+				    	val += S[(moment - shift + momentsCount)%momentsCount];
 			    	}
 
-			    	val *= Math.floor((255.0-diff)/(2*sources.length));
+			    	val *= Math.round((255.0-diff)/(2*sources.length));
 
 			    	pixels[index] = val;
 			        pixels[index + 1] = val;
@@ -91,10 +92,10 @@
 			        pixels[index + 3] = pixels[index + 3];
 			        index += 4;
 				}
-			}		    
-			drawSources(sources, radius);
-		    context.putImageData(image, 0, 0);
-	    	curTime += dt;
+			} 
+			drawSources(sources, radius);		 
+		    context.putImageData(image, 0, 0);  
+	    	curTime += step;
 			requestAnimationFrame(run);
 	    }
 
@@ -106,23 +107,17 @@
 	    		sources = [[height/2, width/4],  [height/2, 3*width/4]];
 	    }
 
-
-		function getDistances(sources) {
-			var D = new Array(height);
-			for (var y = height - 1; y >= 0; y--) {					
-				D[y] = new Array(width);
-				for (var x = width - 1; x >= 0; x--) {
-					D[y][x] = new Array(sources.length);
-					for (var i = sources.length - 1; i >= 0; i--) {
-						D[y][x][i] = distance([x, height-y], sources[i])*2*Math.PI/period; // TODO: WTF??
-					}
-				}				
+		function calculateSinuses(period, momentsCount) {
+			S = new Array(momentsCount);
+			var arg = 0, step = 2*Math.PI/momentsCount;
+			for(var i = momentsCount-1; i>=0; --i, arg += step) {
+				S[i] = Math.sin(arg)+1;
 			}
-			return D;
+			return S;
 		}
 
-		function distance(a, b) {
-			return Math.sqrt((a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]));
+		function distance(a0, a1, b0, b1) {
+			return Math.sqrt((a0-b0)*(a0-b0) + (a1-b1)*(a1-b1));
 		}
 	</script>
 	</head>
