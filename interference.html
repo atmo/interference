@@ -2,11 +2,11 @@
 <head>
 	<script type="application/javascript">
 		var canvas, context;
-		var size = 600;
+		var size = 700;
 		var height = size, width = size;
 		var center = [Math.floor(width/2), Math.floor(height/2)];
 		var pixelSize = 2;
-		var wavelength = 50;
+		var wavelength = 20;
 		var period = 20;
 		var momentsCount = 10000;
 		var sources;
@@ -15,7 +15,8 @@
 		var radius = 4;
 		var step = 1;
 		var S;
-		var sourcesCount = 13;
+		var sourcesCount, maximumSources = 25;
+		var interval = 50;
 
 		var running = true;
 
@@ -28,26 +29,37 @@
 			context.fillStyle="white";
 			context.fillRect(0,0,width,height);
 
-			sources = createSources(sourcesCount);
+			var select = document.getElementById('select');
+			for (var i = 1; i<=maximumSources; ++i) {
+				var opt = document.createElement('option');
+				opt.innerHTML = i;
+				opt.value = i;
+				select.appendChild(opt);
+			}
+			select.options[3].selected = true;
 
-			S = calculateSinuses(period, momentsCount);
-			D = calculateDistances(sources);
+			changeSources();
 
 			image = context.getImageData(0, 0, width, height);
 			run();
 		}
 
-		function createSources (sourcesCount) {
-			var s = new Array(sourcesCount);
+		function createSources (n) {
+			sourcesCount = n;
+			sources = new Array(sourcesCount);
+			if (sourcesCount == 1) {
+				sources[0] = [width/2, height/2];
+				return s;
+			}
+
 			var R = size/4, alpha;
 
 			for (var i = sourcesCount-1; i>=0; --i) {
 				alpha = 2*Math.PI*i/sourcesCount;
-				s[i] = new Array(2);
-				s[i][0] = center[0] + Math.round(R*Math.sin(alpha));
-				s[i][1] = center[1] - Math.round(R*Math.cos(alpha));
+				sources[i] = [center[0] + Math.round(R*Math.sin(alpha)), center[1] - Math.round(R*Math.cos(alpha))];
 			}
-			return s;
+			S = calculateSinuses(period, momentsCount);
+			D = calculateDistances(sources);
 		}
 
 		function drawSources (sources, radius) {
@@ -80,12 +92,10 @@
 				for (var x = width - 1; x >= 0; x--) {
 					var val = 0.0;
 	    			for (var i = sources.length - 1; i >= 0; i--) {
-	    				d = D[y][x][i];
-	    				moment = Math.round(d - Math.floor(d/period)*period)/period*momentsCount;
-				    	val += S[(moment - shift + momentsCount)%momentsCount];
+	    				moment = D[y][x][i] - shift;
+	    				moment = moment >=0 ? moment : moment + momentsCount; 
+				    	val += S[moment];
 			    	}
-
-			    	val *= Math.round((255.0-diff)/(2*sources.length));
 
 			    	pixels[index] = val;
 			        pixels[index + 1] = val;
@@ -97,25 +107,18 @@
 			drawSources(sources, radius);		 
 		    context.putImageData(image, 0, 0);  
 	    	curTime += step;
-			requestAnimationFrame(run);
-	    }
-
-	    function changeSources () {
-	    	selection = document.getElementById('select')[0].value;
-	    	if (selection == 1)
-	    		sources = [[height/2, width/4]];
-	    	else if (selection == 2)
-	    		sources = [[height/2, width/4],  [height/2, 3*width/4]];
+			setTimeout(run, interval);
 	    }
 
 		function calculateSinuses(period, momentsCount) {
 			S = new Array(momentsCount);
 			var arg = 0, step = 2*Math.PI/momentsCount;
 			for(var i = momentsCount-1; i>=0; --i, arg += step) {
-				S[i] = Math.sin(arg)+1;
+				S[i] = (Math.sin(arg)+1)*Math.round((255.0-diff)/(2*sources.length));
 			}
 			return S;
 		}
+
 		function calculateDistances(sources) {
 			var D = new Array(height);
 			for (var y = height - 1; y >= 0; y--) {					
@@ -123,7 +126,7 @@
 				for (var x = width - 1; x >= 0; x--) {
 					D[y][x] = new Array(sources.length);
 					for (var i = sources.length - 1; i >= 0; i--) {
-						D[y][x][i] = distance([x, height-y], sources[i]);
+						D[y][x][i] = Math.round(distance([x, height-y], sources[i])%period/period*momentsCount);
 					}
 				}				
 			}
@@ -132,6 +135,12 @@
 
 		function distance(a, b) {
 			return Math.sqrt((a[0]-b[0])*(a[0]-b[0]) + (a[1]-b[1])*(a[1]-b[1]));
+		}
+
+		function changeSources () {
+			var select = document.getElementById("select");
+	    	var selectedValue = select.options[select.selectedIndex].value;
+	    	createSources(parseInt(selectedValue, 10));
 		}
 	</script>
 	</head>
@@ -146,7 +155,7 @@
 				  <option value=1> 1 </option> 
 				  <option value=2> 2 </option>
 				  <option value=3> 3 </option>
-				  <option value=4> 4 </option>
+				  <option value=4 selected> 4 </option>
 				</select>
 			</div>
 		</div>
