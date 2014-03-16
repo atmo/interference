@@ -3,7 +3,7 @@ var size = 700;
 var height = size, width = size;
 var center = [Math.floor(width/2), Math.floor(height/2)];
 var pixelSize = 2;
-var wavelength = 20;
+var wavelength = 35;
 var period = 20;
 var momentsCount = 10000;
 var sources;
@@ -46,14 +46,15 @@ function createSources (n) {
 	sources = new Array(sourcesCount);
 	if (sourcesCount == 1) {
 		sources[0] = [width/2, height/2];
-		return s;
 	}
+	else
+	{
+		var R = size/4, alpha;
 
-	var R = size/4, alpha;
-
-	for (var i = sourcesCount-1; i>=0; --i) {
-		alpha = 2*Math.PI*i/sourcesCount;
-		sources[i] = [center[0] + Math.round(R*Math.sin(alpha)), center[1] - Math.round(R*Math.cos(alpha))];
+		for (var i = sourcesCount-1; i>=0; --i) {
+			alpha = 2*Math.PI*i/sourcesCount;
+			sources[i] = [center[0] + Math.round(R*Math.sin(alpha)), center[1] - Math.round(R*Math.cos(alpha))];
+		}
 	}
 	S = calculateSinuses(period, momentsCount);
 	D = calculateDistances(sources);
@@ -104,7 +105,8 @@ function run() {
 	drawSources(sources, radius);		 
     context.putImageData(image, 0, 0);  
 	curTime += step;
-	setTimeout(run, interval);
+	if (running)
+		setTimeout(run, interval);
 }
 
 function calculateSinuses(period, momentsCount) {
