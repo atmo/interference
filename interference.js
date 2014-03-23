@@ -15,7 +15,7 @@ var S;
 var sourcesCount, maximumSources = 25;
 var interval = 50;
 
-var running = true;
+var running = true, showSources = true;
 
 function init() {
 	canvas = document.getElementById('canvas');
@@ -101,8 +101,9 @@ function run() {
 	        pixels[index + 3] = pixels[index + 3];
 	        index += 4;
 		}
-	} 
-	drawSources(sources, radius);		 
+	}
+	if (showSources)
+		drawSources(sources, radius);		 
     context.putImageData(image, 0, 0);  
 	curTime += step;
 	if (running)
@@ -140,4 +141,21 @@ function changeSources () {
 	var select = document.getElementById("select");
 	var selectedValue = select.options[select.selectedIndex].value;
 	createSources(parseInt(selectedValue, 10));
+}
+
+function toggleRunning() {
+	running = !running;
+	var button = document.getElementById('runButton');
+	if (running) {
+		button.value = "Pause";
+	}
+	else {
+		button.value = "Run";
+	}
+	setTimeout(run, interval);
+}
+
+function setShowSources() {
+	var checkbox = document.getElementById('checkbox');
+	showSources = checkbox.checked;
 }
