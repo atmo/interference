@@ -1,16 +1,35 @@
+<!DOCTYPE html>
 <html>
-<head>
-<script type="text/javascript" src="interference.js"></script>	
+<meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="aInterference javascript simulation : " />
+
+    <link rel="interference" type="text/css" media="screen" href="stylesheets/interference.css">
+
+    <script language="javascript" src='interference.js'>
+    </script>
+    <title>Interference</title>	
 </head>
-	<body onload="init();">
-		<div style="width: 100%">
-			<div style="float:left; width: 60%">
-				<canvas id="canvas"></canvas>
-			</div>
-			<div style="float:left">
-				<select id="select" onchange="changeSources()">
-				</select>
-			</div>
-		</div>
-	</body>
+<body onload="init()">
+<div class="inner"> 
+  <section id="main_content" class="inner">
+    <h3>Interference simulation</h3>
+        <canvas id="canvas" width="700" height="700" >
+        </canvas>
+        <div class="settings_all">
+          <div class="settings">
+          <label> Number of sources: 
+          <select id="select" onchange="changeSources()" style="display: inline-block;"> </select> </label>
+          </div>
+          <div class="settings">
+           <label> Show sources:  
+            <input id="checkbox" type="checkbox" checked onclick="setShowSources()" /></label>
+          </div>
+          <div class="settings">
+            <input type="button" id="runButton" value="Pause" onclick="toggleRunning()" style="width:60px;">
+          </div>
+        </div>
+  </section>
+ </div>
+  </body>
 </html>
