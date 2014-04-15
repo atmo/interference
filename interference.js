@@ -10,14 +10,16 @@ var t = 0;
 var dt = 1;
 var sourcesCount, maximumSources = 20;
 var interval = 100;
+var fields;
 
 var running = true, showSources = true;
 
 function init() {
-	context = document.getElementById('canvas').getContext('2d');
+	var canvas = document.getElementById('canvas');
 	canvas.width = width;
 	canvas.height = height;
 
+	context = canvas.getContext('2d');
 	context.fillStyle="white";
 	context.fillRect(0,0,width,height);
 
@@ -52,17 +54,28 @@ function createSources (n) {
 				center[1] - Math.round(R*Math.cos(alpha)), period, momentsCount, radius, sourcesCount);
 		}
 	}
+
+	fields = new Array(sourcesCount);
+	for (var i = sources.length - 1; i >= 0; i--) {
+		fields[i] = new Array(height);
+	    for (var y = height - 1; y >= 0; y--) {
+	    	fields[i][y] = new Array(width);
+		}
+	}
 }
 
 function run() {
     var pixels = image.data;
 	
 	var index = 0;
+	for (var i = sources.length - 1; i >= 0; i--) {
+		sources[i].setField(fields[i], t);
+	}
     for (var y = height - 1; y >= 0; y--) {		
 		for (var x = width - 1; x >= 0; x--) {
 			var val = 0.0;
-			for (var i = sources.length - 1; i >= 0; i--) { 
-		    	val += sources[i].value(x, y, t);
+			for (var i = sources.length - 1; i >= 0; i--) {
+		    	val += fields[i][y][x];
 	    	}
 
 	    	pixels[index] = val;
@@ -162,10 +175,15 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
 		}
 	}
 
-	this.value = function(x, y, t) {
+	this.setField = function(f, t) {
 		var shift = t%period/period*momentsCount;
-		var moment = this.D[y][x] - shift;
-		moment = moment >=0 ? moment : moment + momentsCount; 
-    	return this.S[moment];
+		var moment;
+		for (var y = height - 1; y >= 0; y--) {		
+			for (var x = width - 1; x >= 0; x--) {
+				moment = this.D[y][x] - shift;
+				moment = moment >=0 ? moment : moment + momentsCount;
+				f[y][x] = this.S[moment]
+			}
+		}
 	}
 }
