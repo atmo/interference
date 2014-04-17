@@ -1,17 +1,20 @@
 .inner {
   position: relative;
-  max-width: 640px;
-  padding: 20px 10px;
   margin: 0 auto;
-  text-align: center;
-}
-
-.settings_all {
   text-align: center;
 }
 
 .settings {
   display: inline-block;
-  margin-left: 0;
-  margin-right: 0;;
+  text-align: center;
+}
+
+.left_column {
+   float:left;
+   display: inline-block;
+   margin: 10px;
+}
+.right_column {
+   float:left;
+   margin: 10px;
 }

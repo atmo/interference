@@ -4,32 +4,31 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta name="description" content="Interference javascript simulation : " />
 
-    <link rel="interference" type="text/css" media="screen" href="stylesheets/interference.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="interference.css">
+    <script language='javascript' src='interference.js'></script>
 
-    <script language="javascript" src='interference.js'>
-    </script>
     <title>Interference</title>	
 </head>
-<body onload="init()">
+<body onload="init();">
+<h3>Interference simulation</h3>
 <div class="inner"> 
-  <section id="main_content" class="inner">
-    <h3>Interference simulation</h3>
-        <canvas id="canvas" width="700" height="700" >
-        </canvas>
-        <div class="settings_all">
-          <div class="settings">
-          <label> Number of sources: 
-          <select id="select" onchange="setSources()" style="display: inline-block;"> </select> </label>
-          </div>
-          <div class="settings">
-           <label> Show sources:  
-            <input id="checkbox" type="checkbox" checked onclick="setShowSources()" /></label>
-          </div>
-          <div class="settings">
-            <input type="button" id="runButton" value="Pause" onclick="toggleRunning()" style="width:60px;">
-          </div>
-        </div>
-  </section>
- </div>
-  </body>
+  <div class="left_column">
+  <div id="settings">
+    <canvas id="canvas">
+    </canvas>
+  </div>
+  <div class="settings">
+    <label> Number of sources: 
+      <select id="select" onchange="setSources()"> 
+      </select>
+    </label>
+    <label> Show sources:  
+      <input id="checkbox" type="checkbox" checked onclick="setShowSources()" /></label>
+      <input type="button" id="runButton" value="Pause" onclick="toggleRunning()">
+    </div>  
+  </div>
+  <div class="right_column">
+  </div>
+</div>
+</body>
 </html>
