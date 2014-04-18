@@ -8,7 +8,7 @@ var radius = 5;
 var sources;
 var t = 0;
 var dt = 1;
-var sourcesCount, maximumSources = 20;
+var sourcesCount, maxSourcesCount = 20;
 var interval = 100;
 var fields;
 
@@ -24,16 +24,29 @@ function init() {
 	context.fillRect(0,0,width,height);
 
 	var select = document.getElementById('select');
-	for (var i = 1; i<=maximumSources; ++i) {
+	for (var i = 1; i<=maxSourcesCount; ++i) {
 		var opt = document.createElement('option');
 		opt.innerHTML = i;
 		opt.value = i;
 		select.appendChild(opt);
 	}
+
 	select.options[3].selected = true;
 
-	setSources();
+	var column = document.getElementById('rc');
+	for (var i = 0; i<maxSourcesCount; ++i) {
+		var div = document.createElement('div');
+		div.className = 'div_src_inp';
+		var input = document.createElement('input');
+		input.setAttribute('type', 'number');
+		input.className = 'src_inp';
+		input.id = i;
+		input.addEventListener('change', onInputChanged,false);
+		div.appendChild(input);
+		column.appendChild(div);
+	}
 
+	setSources();
 	image = context.getImageData(0, 0, width, height);
 	run();
 }
@@ -69,7 +82,7 @@ function run() {
 	
 	var index = 0;
 	for (var i = sources.length - 1; i >= 0; i--) {
-		sources[i].setField(fields[i], t);
+		sources[i].createField(fields[i], t);
 	}
     for (var y = height - 1; y >= 0; y--) {		
 		for (var x = width - 1; x >= 0; x--) {
@@ -97,7 +110,9 @@ function run() {
 function setSources () {
 	var select = document.getElementById("select");
 	var selectedValue = select.options[select.selectedIndex].value;
-	createSources(parseInt(selectedValue, 10));
+	var sc = parseInt(selectedValue, 10)
+	createSources(sc);
+	setInputs(sc);
 }
 
 function toggleRunning() {
@@ -117,6 +132,22 @@ function setShowSources() {
 	showSources = checkbox.checked;
 }
 
+function setInputs (sourcesCount) {
+	var column = document.getElementById('rc');
+	for (var i = maxSourcesCount-1; i >= sourcesCount; i--) {
+		column.childNodes[i+1].style.display = "none";
+	}
+	for (var i = sourcesCount-1; i >= 0; i--) {
+		column.childNodes[i+1].style.display = "inline";
+		column.childNodes[i+1].childNodes[0].value = sources[i].period;
+	}
+}
+
+function onInputChanged (e) {		
+    e = e || window.event;
+    var target = e.target || e.srcElement;
+    sources[target.id].setPeriod(parseInt(target.value, 10));
+}
 
 function Source(x, y, period, momentsCount, radius, sourcesCount) {
 	var self = this;
@@ -137,7 +168,7 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
 		for (var y = height - 1; y >= 0; y--) {					
 			D[y] = new Array(width);
 			for (var x = width - 1; x >= 0; x--) {
-				D[y][x] = Math.round(distance([x, height-y], [self.x, self.y])%period/period*momentsCount);
+				D[y][x] = Math.round(distance([x, height-y], [self.x, self.y])%self.period/self.period*momentsCount);
 			}				
 		}
 		return D;
@@ -175,8 +206,8 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
 		}
 	}
 
-	this.setField = function(f, t) {
-		var shift = t%period/period*momentsCount;
+	this.createField = function(f, t) {
+		var shift = Math.floor(t%this.period/this.period*this.momentsCount);
 		var moment;
 		for (var y = height - 1; y >= 0; y--) {		
 			for (var x = width - 1; x >= 0; x--) {
@@ -185,5 +216,10 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
 				f[y][x] = this.S[moment]
 			}
 		}
+	}
+
+	this.setPeriod = function(p) {
+		this.period = p;
+		this.D = calculateDistance();
 	}
 }
