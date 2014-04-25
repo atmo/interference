@@ -10,26 +10,25 @@
     <title>Interference</title>
 </head>
 <body onload="init();">
-<h3>Interference simulation</h3>
-<div class="inner">
-  <div class="left_column">
-  <div id="settings">
-    <canvas id="canvas">
-    </canvas>
-  </div>
-  <div class="settings">
-    <label> Number of sources:
-      <select id="select" onchange="setSources()">
-      </select>
-    </label>
-    <label> Show sources:
-      <input id="checkbox" type="checkbox" checked onclick="setShowSources()" /></label>
-      <input type="button" id="runButton" value="Pause" onclick="toggleRunning()">
+  <h3>Interference simulation</h3>
+    <div class="inner">
+      <div class="left_column">
+        <div>
+          <canvas id="canvas">
+          </canvas>
+        </div>
+        <div class="settings">
+          <label> Number of sources:
+            <select id="select" onchange="setSources()">
+            </select>
+          </label>
+          <label> Show sources:
+            <input id="checkbox" type="checkbox" checked onclick="setShowSources()" />
+          </label>
+          <input type="button" id="runButton" value="Pause" onclick="toggleRunning()">
+        </div>
+      </div>
+      <div class="right_column" id="rc"></div>
     </div>
-  </div>
-  <div class="right_column" id="rc">
-
-  </div>
-</div>
-</body>
+  </body>
 </html>

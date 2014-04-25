@@ -31,7 +31,7 @@ function init() {
         select.appendChild(opt);
     }
 
-    select.options[3].selected = true;
+    select.options[4].selected = true;
 
     var column = document.getElementById('rc');
     for (var i = 0; i<maxSourcesCount; ++i) {
@@ -69,10 +69,10 @@ function createSources (n) {
     }
 
     fields = new Array(sourcesCount);
-    for (var i = sources.length - 1; i >= 0; i--) {
-        fields[i] = new Array(height);
-        for (var y = height - 1; y >= 0; y--) {
-            fields[i][y] = new Array(width);
+    for (var i = sources.length - 1; i >= 0; --i) {
+        fields[i] = new Array(width);
+        for (var x = width - 1; x >= 0; --x) {
+            fields[i][x] = new Array(height);
         }
     }
 }
@@ -81,14 +81,14 @@ function run() {
     var pixels = image.data;
 
     var index = 0;
-    for (var i = sources.length - 1; i >= 0; i--) {
+    for (var i = sources.length - 1; i >= 0; --i) {
         sources[i].createField(fields[i], t);
     }
-    for (var y = height - 1; y >= 0; y--) {
-        for (var x = width - 1; x >= 0; x--) {
+    for (var y = 0; y < height; ++y) {
+        for (var x = 0; x < width; ++x) {
             var val = 0.0;
-            for (var i = sources.length - 1; i >= 0; i--) {
-                val += fields[i][y][x];
+            for (var i = sources.length - 1; i >= 0; --i) {
+                val += fields[i][x][y];
             }
 
             pixels[index] = val;
@@ -98,8 +98,9 @@ function run() {
             index += 4;
         }
     }
+
     if (showSources)
-        for (var i = sources.length - 1; i >= 0; i--)
+        for (var i = sources.length - 1; i >= 0; --i)
             sources[i].draw(image);
     context.putImageData(image, 0, 0);
     t += dt;
@@ -134,12 +135,12 @@ function setShowSources() {
 
 function setInputs (sourcesCount) {
     var column = document.getElementById('rc');
-    for (var i = maxSourcesCount-1; i >= sourcesCount; i--) {
-        column.childNodes[i+1].style.display = "none";
+    for (var i = maxSourcesCount-1; i >= sourcesCount; --i) {
+        column.childNodes[i].style.display = "none";
     }
-    for (var i = sourcesCount-1; i >= 0; i--) {
-        column.childNodes[i+1].style.display = "inline";
-        column.childNodes[i+1].childNodes[0].value = sources[i].period;
+    for (var i = sourcesCount-1; i >= 0; --i) {
+        column.childNodes[i].style.display = "inline";
+        column.childNodes[i].childNodes[0].value = sources[i].period;
     }
 }
 
@@ -160,15 +161,15 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
 
     this.radius = radius;
 
-    this.D = calculateDistance();
-    this.S = calculateSin();
+    var D = calculateDistance();
+    var S = calculateSin();
 
     function calculateDistance() {
-        var D = new Array(height);
-        for (var y = height - 1; y >= 0; y--) {
-            D[y] = new Array(width);
-            for (var x = width - 1; x >= 0; x--) {
-                D[y][x] = Math.round(distance([x, height-y], [self.x, self.y])%self.period/self.period*momentsCount);
+        var D = new Array(width);
+        for (var x = width - 1; x >= 0; --x) {
+            D[x] = new Array(height);
+            for (var y = height - 1; y >= 0; --y) {
+                D[x][y] = Math.round(distance([x, y], [self.x, self.y])%period/period*momentsCount);
             }
         }
         return D;
@@ -179,10 +180,10 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
     }
 
     function calculateSin() {
-        var S = new Array(self.momentsCount);
-        var arg = 0, step = 2*Math.PI/self.momentsCount;
-        for(var i = self.momentsCount-1; i>=0; --i, arg += step) {
-            S[i] = Math.floor(255.0*(Math.sin(arg)+1)/(2*self.sourcesCount));
+        var S = new Array(momentsCount);
+        var arg = 0, step = 2*Math.PI/momentsCount;
+        for(var i = momentsCount-1; i>=0; --i, arg += step) {
+            S[i] = Math.floor(255.0*(Math.sin(arg)+1)/(2*sourcesCount));
         }
         return S;
     }
@@ -209,17 +210,17 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
     this.createField = function(f, t) {
         var shift = Math.floor(t%period/period*momentsCount);
         var moment;
-        for (var y = height - 1; y >= 0; y--) {
-            for (var x = width - 1; x >= 0; x--) {
-                moment = this.D[y][x] - shift;
+        for (var x = width - 1; x >= 0; --x) {
+            for (var y = height - 1; y >= 0; --y) {
+                moment = D[x][y] - shift;
                 moment = moment >=0 ? moment : moment + momentsCount;
-                f[y][x] = this.S[moment]
+                f[x][y] = S[moment];
             }
         }
     }
 
     this.setPeriod = function(p) {
-        this.period = p;
-        this.D = calculateDistance();
+        period = p;
+        D = calculateDistance();
     }
 }
