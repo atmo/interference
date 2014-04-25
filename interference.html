@@ -7,28 +7,28 @@
     <link rel="stylesheet" type="text/css" media="screen" href="interference.css">
     <script language='javascript' src='interference.js'></script>
 
-    <title>Interference</title>	
+    <title>Interference</title>
 </head>
 <body onload="init();">
 <h3>Interference simulation</h3>
-<div class="inner"> 
+<div class="inner">
   <div class="left_column">
   <div id="settings">
     <canvas id="canvas">
     </canvas>
   </div>
   <div class="settings">
-    <label> Number of sources: 
-      <select id="select" onchange="setSources()"> 
+    <label> Number of sources:
+      <select id="select" onchange="setSources()">
       </select>
     </label>
-    <label> Show sources:  
+    <label> Show sources:
       <input id="checkbox" type="checkbox" checked onclick="setShowSources()" /></label>
       <input type="button" id="runButton" value="Pause" onclick="toggleRunning()">
-    </div>  
+    </div>
   </div>
   <div class="right_column" id="rc">
-  
+
   </div>
 </div>
 </body>
