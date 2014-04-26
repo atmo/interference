@@ -18,6 +18,11 @@ input.src_inp {
   text-align: center;
 }
 
+.columns {
+   margin: 0 auto;
+   width: 600px;
+}
+
 .left_column {
    float:left;
    display: inline-block;
@@ -26,4 +31,8 @@ input.src_inp {
 .right_column {
    float:left;
    margin: 10px;
+}
+
+#end {
+  clear: both;
 }
