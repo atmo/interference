@@ -12,23 +12,36 @@
 <body onload="init();">
   <h3>Interference simulation</h3>
     <div class="inner">
-      <div class="left_column">
-        <div>
-          <canvas id="canvas">
-          </canvas>
+      <div id="columns">
+        <div id="canvas_column">
+          <div>
+            <canvas id="canvas">
+            </canvas>
+          </div>
+          <div id="settings">
+            <label> Number of sources:
+              <select id="select" onchange="setSources()">
+              </select>
+            </label>
+            <label> Show sources:
+              <input id="checkbox" type="checkbox" checked onclick="setShowSources()" />
+            </label>
+            <input type="button" id="runButton" value="Pause" onclick="toggleRunning()" />
+          </div>
         </div>
-        <div class="settings">
-          <label> Number of sources:
-            <select id="select" onchange="setSources()">
-            </select>
-          </label>
-          <label> Show sources:
-            <input id="checkbox" type="checkbox" checked onclick="setShowSources()" />
-          </label>
-          <input type="button" id="runButton" value="Pause" onclick="toggleRunning()">
+        <div id="periods_column">
+          <div>
+            Periods:
+          </div>
+          <div id="periods"></div>
+        </div>
+        <div id="phases_column">
+          <div>
+            Phases:
+          </div>
+          <div id="phases"></div>
         </div>
       </div>
-      <div class="right_column" id="rc"></div>
     </div>
   </body>
 </html>

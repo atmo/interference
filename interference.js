@@ -1,9 +1,9 @@
 var context;
-var size = 500;
+var size = 600;
 var height = size, width = size;
 var center = [Math.floor(width/2), Math.floor(height/2)];
 var period = 20;
-var momentsCount = 10000;
+var momentsCount = 100;
 var radius = 5;
 var sources;
 var t = 0;
@@ -33,17 +33,32 @@ function init() {
 
     select.options[4].selected = true;
 
-    var column = document.getElementById('rc');
+    var periods = document.getElementById('periods');
+
     for (var i = 0; i<maxSourcesCount; ++i) {
         var div = document.createElement('div');
-        div.className = 'div_src_inp';
+        div.className = 'div_period_input';
         var input = document.createElement('input');
         input.setAttribute('type', 'number');
-        input.className = 'src_inp';
+        input.className = 'period_input';
         input.id = i;
-        input.addEventListener('change', onInputChanged,false);
+        input.addEventListener('change', onPeriodInputChanged,false);
         div.appendChild(input);
-        column.appendChild(div);
+        periods.appendChild(div);
+    }
+
+    var phases = document.getElementById('phases');
+
+    for (var i = 0; i<maxSourcesCount; ++i) {
+        var div = document.createElement('div');
+        div.className = 'div_phase_input';
+        var input = document.createElement('input');
+        input.setAttribute('type', 'number');
+        input.className = 'phase_input';
+        input.id = i;
+        input.addEventListener('change', onPhaseInputChanged,false);
+        div.appendChild(input);
+        phases.appendChild(div);
     }
 
     setSources();
@@ -64,7 +79,7 @@ function createSources (n) {
         for (var i = sourcesCount-1; i>=0; --i) {
             alpha = 2*Math.PI*i/sourcesCount;
             sources[i] = new Source(center[0] + Math.round(R*Math.sin(alpha)),
-                center[1] - Math.round(R*Math.cos(alpha)), period, momentsCount, radius, sourcesCount);
+                center[1] - Math.round(R*Math.cos(alpha)), period, 0, momentsCount, radius, sourcesCount);
         }
     }
 
@@ -124,8 +139,8 @@ function toggleRunning() {
     }
     else {
         button.value = "Run";
+        setTimeout(run, interval);
     }
-    setTimeout(run, interval);
 }
 
 function setShowSources() {
@@ -134,28 +149,45 @@ function setShowSources() {
 }
 
 function setInputs (sourcesCount) {
-    var column = document.getElementById('rc');
+    var periods = document.getElementById('periods');
     for (var i = maxSourcesCount-1; i >= sourcesCount; --i) {
-        column.childNodes[i].style.display = "none";
+        periods.childNodes[i].style.display = "none";
     }
     for (var i = sourcesCount-1; i >= 0; --i) {
-        column.childNodes[i].style.display = "inline";
-        column.childNodes[i].childNodes[0].value = sources[i].period;
+        periods.childNodes[i].style.display = "inline";
+        periods.childNodes[i].childNodes[0].value = sources[i].period;
+    }
+
+    var phases = document.getElementById('phases');
+    for (var i = maxSourcesCount-1; i >= sourcesCount; --i) {
+        phases.childNodes[i].style.display = "none";
+    }
+    for (var i = sourcesCount-1; i >= 0; --i) {
+        phases.childNodes[i].style.display = "inline";
+        phases.childNodes[i].childNodes[0].value = sources[i].phase;
     }
 }
 
-function onInputChanged (e) {
+function onPeriodInputChanged (e) {
     e = e || window.event;
     var target = e.target || e.srcElement;
     sources[target.id].setPeriod(parseInt(target.value, 10));
 }
 
-function Source(x, y, period, momentsCount, radius, sourcesCount) {
+function onPhaseInputChanged (e) {
+    e = e || window.event;
+    var target = e.target || e.srcElement;
+    sources[target.id].phase = parseInt(target.value, 10);
+    alert(target.value)
+}
+
+function Source(x, y, period, phase, momentsCount, radius, sourcesCount) {
     var self = this;
 
     this.x = x;
     this.y = y;
     this.period = period;
+    this.phase = phase;
     this.momentsCount = momentsCount;
     this.sourcesCount = sourcesCount;
 
@@ -209,11 +241,13 @@ function Source(x, y, period, momentsCount, radius, sourcesCount) {
 
     this.createField = function(f, t) {
         var shift = Math.floor(t%period/period*momentsCount);
+        var phase_add = Math.floor(this.phase/period*momentsCount);
         var moment;
         for (var x = width - 1; x >= 0; --x) {
             for (var y = height - 1; y >= 0; --y) {
-                moment = D[x][y] - shift;
-                moment = moment >=0 ? moment : moment + momentsCount;
+                moment = D[x][y] - shift + phase_add;
+                moment = moment>=0 ? moment : moment + momentsCount;
+                moment = moment<momentsCount ? moment : moment - momentsCount;
                 f[x][y] = S[moment];
             }
         }
