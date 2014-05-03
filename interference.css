@@ -35,18 +35,18 @@ input.phase_input {
 #canvas_column {
   float:left;
   margin: 10px;
-  width: 60%;
+  width: 75%;
   display: inline-block;
 }
 
 #periods_column {
-  float:right;
+  text-align:right;
   margin: 10px;
   display: inline-block;
 }
 
 #phases_column {
-  float:right;
+  text-align:right;
   margin: 10px;
   display: inline-block;
 }
