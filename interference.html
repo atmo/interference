@@ -1,47 +1,48 @@
 <!DOCTYPE html>
 <html>
-<meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Interference javascript simulation : " />
+<head>
+  <meta charset='utf-8' />
+  <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+  <meta name="description" content="Interference javascript simulation : " />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="interference.css">
-    <script language='javascript' src='interference.js'></script>
+  <link rel="stylesheet" type="text/css" media="screen" href="interference.css">
+  <script language='javascript' src='interference.js'></script>
 
-    <title>Interference</title>
+  <title>Interference</title>
 </head>
 <body onload="init();">
   <h3>Interference simulation</h3>
-    <div class="inner">
-      <div id="columns">
-        <div id="canvas_column">
-          <div>
-            <canvas id="canvas">
-            </canvas>
-          </div>
-          <div id="settings">
-            <label> Number of sources:
-              <select id="select" onchange="setSources()">
-              </select>
-            </label>
-            <label> Show sources:
-              <input id="checkbox" type="checkbox" checked onclick="setShowSources()" />
-            </label>
-            <input type="button" id="runButton" value="Pause" onclick="toggleRunning()" />
-          </div>
+  <div class="inner">
+    <div id="columns">
+      <div id="canvas_column">
+        <div>
+          <canvas id="canvas">
+          </canvas>
         </div>
-        <div id="periods_column">
-          <div>
-            Periods:
-          </div>
-          <div id="periods"></div>
-        </div>
-        <div id="phases_column">
-          <div>
-            Phases:
-          </div>
-          <div id="phases"></div>
+        <div id="settings">
+          <label> Number of sources:
+            <select id="select" onchange="setSources()">
+            </select>
+          </label>
+          <label> Show sources:
+            <input id="checkbox" type="checkbox" checked onclick="setShowSources()" />
+          </label>
+          <input type="button" id="runButton" value="Pause" onclick="toggleRunning()" />
         </div>
       </div>
+      <div id="periods_column">
+        <div>
+          Periods:
+        </div>
+        <div id="periods"></div>
+      </div>
+      <div id="phases_column">
+        <div>
+          Phases:
+        </div>
+        <div id="phases"></div>
+      </div>
     </div>
-  </body>
+  </div>
+</body>
 </html>
